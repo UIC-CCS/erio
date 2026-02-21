@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { BarChart3, Globe, Calendar, TrendingUp, Users, Link2 } from 'lucide-react'
-import { dashboardAPI, partnersAPI, activitiesAPI } from '../../services/supabaseApi'
+import { Globe, Calendar, Users, Link2, CalendarCheck, Plane } from 'lucide-react'
+import { dashboardAPI, partnersAPI, activitiesAPI, mobilityProgrammesAPI, eventsAPI } from '../../services/supabaseApi'
 import { useNavigate } from 'react-router-dom'
 
 export default function AdminOverview() {
@@ -8,20 +8,26 @@ export default function AdminOverview() {
   const [stats, setStats] = useState(null)
   const [partnersCount, setPartnersCount] = useState(0)
   const [activitiesCount, setActivitiesCount] = useState(0)
+  const [mobilityCount, setMobilityCount] = useState(0)
+  const [eventsCount, setEventsCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [statsData, partnersData, activitiesData] = await Promise.all([
+        const [statsData, partnersData, activitiesData, mobilityCountRes, eventsCountRes] = await Promise.all([
           dashboardAPI.getStats(),
           partnersAPI.getAll(),
-          activitiesAPI.getAll()
+          activitiesAPI.getAll(),
+          mobilityProgrammesAPI.getCount(),
+          eventsAPI.getCount()
         ])
 
         setStats(statsData)
         setPartnersCount(partnersData?.length || 0)
         setActivitiesCount(activitiesData?.length || 0)
+        setMobilityCount(typeof mobilityCountRes === 'number' ? mobilityCountRes : 0)
+        setEventsCount(typeof eventsCountRes === 'number' ? eventsCountRes : 0)
       } catch (error) {
         console.error('Error loading overview data:', error)
       } finally {
@@ -44,29 +50,37 @@ export default function AdminOverview() {
       label: 'Partner Universities',
       value: partnersCount || 0,
       icon: Globe,
-      color: 'pink',
       path: '/admin/partners'
     },
     {
       label: 'Active Agreements',
       value: stats?.activeAgreements || 0,
       icon: Link2,
-      color: 'pink',
       path: '/admin/stats'
     },
     {
       label: 'Student Exchanges',
       value: stats?.studentExchanges || 0,
       icon: Users,
-      color: 'pink',
       path: '/admin/stats'
     },
     {
       label: 'Recent Activities',
       value: activitiesCount || 0,
       icon: Calendar,
-      color: 'pink',
       path: '/admin/activities'
+    },
+    {
+      label: 'Mobility Programme',
+      value: mobilityCount || 0,
+      icon: Plane,
+      path: '/admin/mobility'
+    },
+    {
+      label: 'Events This Year',
+      value: eventsCount ?? stats?.eventsThisYear ?? 0,
+      icon: CalendarCheck,
+      path: '/admin/events'
     }
   ]
 
@@ -78,8 +92,8 @@ export default function AdminOverview() {
         <p className="text-gray-600">Manage and monitor your dashboard content</p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Quick Stats - includes Recent Activities, Mobility Programme, Events This Year */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {quickStats.map((stat) => {
           const Icon = stat.icon
           return (
@@ -101,57 +115,6 @@ export default function AdminOverview() {
             </button>
           )
         })}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <button
-          onClick={() => navigate('/admin/stats')}
-          className="glass-card rounded-3xl p-6 shadow-glass hover:shadow-glass-lg transition-glass group text-left"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl gradient-pink flex items-center justify-center shadow-glass-sm">
-              <BarChart3 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-800">Dashboard Stats</h3>
-              <p className="text-sm text-gray-600">Edit statistics</p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500">Update partner counts, agreements, exchanges, and engagement metrics</p>
-        </button>
-
-        <button
-          onClick={() => navigate('/admin/partners')}
-          className="glass-card rounded-3xl p-6 shadow-glass hover:shadow-glass-lg transition-glass group text-left"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl gradient-pink flex items-center justify-center shadow-glass-sm">
-              <Globe className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-800">Partner Universities</h3>
-              <p className="text-sm text-gray-600">Manage partners</p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500">Add, edit, or remove partner universities from the map</p>
-        </button>
-
-        <button
-          onClick={() => navigate('/admin/activities')}
-          className="glass-card rounded-3xl p-6 shadow-glass hover:shadow-glass-lg transition-glass group text-left"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl gradient-pink flex items-center justify-center shadow-glass-sm">
-              <Calendar className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-800">Recent Activities</h3>
-              <p className="text-sm text-gray-600">Manage activities</p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500">Add or update recent activities and news items</p>
-        </button>
       </div>
     </div>
   )

@@ -1132,3 +1132,20 @@ export const engagementAPI = {
     }
   }
 }
+
+// Facebook page posts (via Edge Function; no embed = no console errors)
+export const facebookAPI = {
+  getPosts: async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-facebook-posts')
+      if (error) {
+        console.debug('Facebook posts fetch failed:', error?.message)
+        return []
+      }
+      return data?.posts ?? []
+    } catch (err) {
+      console.debug('Facebook posts error:', err?.message)
+      return []
+    }
+  }
+}
