@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { LogIn, Lock, User, X, Eye, EyeOff } from 'lucide-react'
-import { authAPI } from '../services/supabaseApi'
+import { authAPI } from '../services/api'
 
 export default function AdminLogin({ onClose, onLogin }) {
   const [username, setUsername] = useState('')

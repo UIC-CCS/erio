@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { ExternalLink, Loader2 } from 'lucide-react'
-import { facebookAPI } from '../services/supabaseApi'
+import { facebookAPI } from '../services/api'
 
 const ERIO_FACEBOOK_URL = 'https://www.facebook.com/p/UIC-External-Relations-and-Internationalization-Office-100071237296359/'
 const ERIO_PAGE_NAME = 'UIC External Relations and Internationalization Office'

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
-import { activitiesAPI } from '../../services/supabaseApi'
+import { activitiesAPI } from '../../services/api'
 
 export default function AdminActivities() {
   const [activities, setActivities] = useState([])

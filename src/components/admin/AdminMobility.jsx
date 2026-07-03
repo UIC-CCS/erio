@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Users, UserCircle } from 'lucide-react'
-import { mobilityProgrammesAPI } from '../../services/supabaseApi'
+import { mobilityProgrammesAPI } from '../../services/api'
 
 const TYPE_OPTIONS = [
   { value: 'student_exchange', label: 'Student Exchange' },

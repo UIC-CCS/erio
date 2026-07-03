@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, Calendar, MapPin, FileText } from 'lucide-react'
-import { eventsAPI } from '../services/supabaseApi'
+import { eventsAPI } from '../services/api'
 
 export default function EventsModal({ onClose }) {
   const [events, setEvents] = useState([])

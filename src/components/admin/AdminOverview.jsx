@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Globe, Calendar, Users, Link2, CalendarCheck, Plane } from 'lucide-react'
-import { dashboardAPI, partnersAPI, activitiesAPI, mobilityProgrammesAPI, eventsAPI } from '../../services/supabaseApi'
+import { dashboardAPI, partnersAPI, activitiesAPI, mobilityProgrammesAPI, eventsAPI } from '../../services/api'
 import { useNavigate } from 'react-router-dom'
 
 export default function AdminOverview() {

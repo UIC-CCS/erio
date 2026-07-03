@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Plus, Trash2, Edit2, X, Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
-import { partnersAPI } from '../../services/supabaseApi'
+import { partnersAPI } from '../../services/api'
 
 const ROWS_PER_PAGE = 10
 const GEOCODE_DEBOUNCE_MS = 800

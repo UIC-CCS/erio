@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Save, Plus, Trash2 } from 'lucide-react'
-import { dashboardAPI, partnersAPI, activitiesAPI, engagementAPI, programOfferingsAPI } from '../../services/supabaseApi'
+import { dashboardAPI, partnersAPI, activitiesAPI, engagementAPI, programOfferingsAPI } from '../../services/api'
 
 export default function AdminStats() {
   const [stats, setStats] = useState({

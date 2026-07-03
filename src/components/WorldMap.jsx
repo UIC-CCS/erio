@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps'
+import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup, Line } from 'react-simple-maps'
 import { X, MapPin, Globe, Users, Calendar, Plus, Minus } from 'lucide-react'
 import PartnerDetails from './PartnerDetails'
-import { partnersAPI } from '../services/supabaseApi'
+import { partnersAPI } from '../services/api'
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
 
@@ -279,43 +279,26 @@ export default function WorldMap() {
                 }
               </Geographies>
               {/* Connections from home university to each partner (light pink lines) */}
-              {partners && partners.length > 0 && (
-                <Geographies
-                  geography={{
-                    type: 'FeatureCollection',
-                    features: partners.map((p) => ({
-                      type: 'Feature',
-                      properties: { id: `conn-${p.id}`, partnerId: p.id },
-                      geometry: {
-                        type: 'LineString',
-                        coordinates: [HOME_UNIVERSITY.coordinates, p.coordinates],
-                      },
-                    })),
-                  }}
-                >
-                  {({ geographies }) =>
-                    geographies.map((geo) => {
-                      const pid = geo.properties && (geo.properties.partnerId || (geo.properties.id && geo.properties.id.replace('conn-', '')))
-                      const isHovered = hoveredConnectionId === String(pid) || hoveredPartnerId === pid
-                      return (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          fill="none"
-                          stroke={isHovered ? '#ff7fbf' : '#F9A8D4'}
-                          strokeWidth={isHovered ? Math.max(1.2, 2.2 / zoom) : Math.max(0.6, 1.4 / zoom)}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          opacity={isHovered ? 1 : 0.85}
-                          onMouseEnter={() => setHoveredConnectionId(String(pid))}
-                          onMouseLeave={() => setHoveredConnectionId(null)}
-                          style={{ transition: 'stroke-width 180ms ease, stroke 180ms ease, opacity 180ms ease' }}
-                        />
-                      )
-                    })
-                  }
-                </Geographies>
-              )}
+              {partners && partners.map((p) => {
+                const pid = p.id
+                const isHovered = hoveredConnectionId === String(pid) || hoveredPartnerId === pid
+                return (
+                  <Line
+                    key={`conn-${pid}`}
+                    from={HOME_UNIVERSITY.coordinates}
+                    to={p.coordinates}
+                    stroke={isHovered ? '#ff7fbf' : '#F9A8D4'}
+                    strokeWidth={isHovered ? Math.max(1.2, 2.2 / zoom) : Math.max(0.6, 1.4 / zoom)}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={isHovered ? 1 : 0.85}
+                    fill="none"
+                    onMouseEnter={() => setHoveredConnectionId(String(pid))}
+                    onMouseLeave={() => setHoveredConnectionId(null)}
+                    style={{ transition: 'stroke-width 180ms ease, stroke 180ms ease, opacity 180ms ease' }}
+                  />
+                )
+              })}
 
               {/* Home university marker */}
               <Marker key={HOME_UNIVERSITY.id} coordinates={HOME_UNIVERSITY.coordinates}>

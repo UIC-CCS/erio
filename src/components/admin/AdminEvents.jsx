@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Calendar } from 'lucide-react'
-import { eventsAPI } from '../../services/supabaseApi'
+import { eventsAPI } from '../../services/api'
 
 const emptyEvent = () => ({
   title: '',

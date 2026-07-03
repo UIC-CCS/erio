@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { LogOut, BarChart3, Globe, Home, Settings, Calendar, Users, CalendarCheck } from 'lucide-react'
-import { authAPI } from '../../services/supabaseApi'
+import { authAPI } from '../../services/api'
 import OrganicShapes from '../OrganicShapes'
 import uicErioLogo from '../../assets/uic-erio-logo (2).png'
 

@@ -3,7 +3,7 @@ import { TrendingUp, Users, Globe, Link2, Calendar, Award, Eye } from 'lucide-re
 import StatsCard from './StatsCard'
 import EngagementChart from './EngagementChart'
 import RecentActivities from './RecentActivities'
-import { dashboardAPI, viewCounterAPI, partnersAPI, engagementAPI, mobilityProgrammesAPI, eventsAPI, programOfferingsAPI } from '../services/supabaseApi'
+import { dashboardAPI, viewCounterAPI, partnersAPI, engagementAPI, mobilityProgrammesAPI, eventsAPI, programOfferingsAPI } from '../services/api'
 
 export default function Dashboard({ onPartnerUniversitiesClick, onActiveAgreementsClick, onMobilityProgrammeClick, onEventsClick }) {
   const [dashboardData, setDashboardData] = useState({

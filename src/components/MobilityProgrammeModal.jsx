@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, Users, ChevronLeft, Calendar, MapPin, UserCircle } from 'lucide-react'
-import { mobilityProgrammesAPI } from '../services/supabaseApi'
+import { mobilityProgrammesAPI } from '../services/api'
 
 const PROGRAMME_TYPES = [
   { id: 'faculty_exchange', label: 'Faculty Exchange', icon: UserCircle },

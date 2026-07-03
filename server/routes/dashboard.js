@@ -1,18 +1,14 @@
 import express from 'express'
-import pool from '../config/database.js'
+import { queryAll, queryOne, run } from '../config/database.js'
 import { authenticateAdmin } from '../middleware/auth.js'
 
 const router = express.Router()
 
-// Get dashboard stats (public)
 router.get('/stats', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM dashboard_stats ORDER BY updated_at DESC LIMIT 1'
-    )
-    
-    if (result.rows.length === 0) {
-      // Return default stats if none exist
+    const stats = queryOne('SELECT * FROM dashboard_stats ORDER BY updated_at DESC LIMIT 1')
+
+    if (!stats) {
       return res.json({
         partnerUniversities: 76,
         activeAgreements: 65,
@@ -23,24 +19,19 @@ router.get('/stats', async (req, res) => {
         engagementScore: 9.2
       })
     }
-    
-    const stats = result.rows[0]
 
-    // Calculate active agreements in real time based on partner agreement dates
     let activeAgreements = stats.active_agreements
     try {
-      const partnersResult = await pool.query(
-        'SELECT sign_date, expiry_date FROM partner_universities'
-      )
+      const partnersResult = queryAll('SELECT sign_date, expiry_date FROM partner_universities')
       const todayISO = new Date().toISOString().split('T')[0]
-      activeAgreements = partnersResult.rows.filter((p) => {
+      activeAgreements = partnersResult.filter((p) => {
         if (!p.sign_date) return false
-        const sign = p.sign_date.toISOString().split('T')[0]
-        const expiry = p.expiry_date ? p.expiry_date.toISOString().split('T')[0] : null
+        const sign = p.sign_date
+        const expiry = p.expiry_date || null
         return sign <= todayISO && (!expiry || expiry >= todayISO)
       }).length
     } catch (err) {
-      console.debug('Falling back to stored active_agreements in dashboard_stats:', err?.message)
+      console.debug('Falling back to stored active_agreements:', err?.message)
     }
 
     res.json({
@@ -48,8 +39,8 @@ router.get('/stats', async (req, res) => {
       activeAgreements,
       studentExchanges: stats.student_exchanges,
       eventsThisYear: stats.events_this_year,
-      regionalDistribution: stats.regional_distribution,
-      programsOffered: stats.programs_offered,
+      regionalDistribution: JSON.parse(stats.regional_distribution),
+      programsOffered: JSON.parse(stats.programs_offered),
       engagementScore: parseFloat(stats.engagement_score)
     })
   } catch (error) {
@@ -58,7 +49,6 @@ router.get('/stats', async (req, res) => {
   }
 })
 
-// Update dashboard stats (admin only)
 router.put('/stats', authenticateAdmin, async (req, res) => {
   try {
     const {
@@ -70,30 +60,36 @@ router.put('/stats', authenticateAdmin, async (req, res) => {
       programsOffered,
       engagementScore
     } = req.body
-    
-    await pool.query(
-      `UPDATE dashboard_stats 
-       SET partner_universities = $1,
-           active_agreements = $2,
-           student_exchanges = $3,
-           events_this_year = $4,
-           regional_distribution = $5,
-           programs_offered = $6,
-           engagement_score = $7,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = (SELECT id FROM dashboard_stats ORDER BY updated_at DESC LIMIT 1)
-       RETURNING *`,
-      [
-        partnerUniversities,
-        activeAgreements,
-        studentExchanges,
-        eventsThisYear,
-        JSON.stringify(regionalDistribution),
-        JSON.stringify(programsOffered),
-        engagementScore
-      ]
-    )
-    
+
+    const existing = queryOne('SELECT id FROM dashboard_stats ORDER BY updated_at DESC LIMIT 1')
+
+    if (existing) {
+      run(
+        `UPDATE dashboard_stats SET
+          partner_universities = ?, active_agreements = ?, student_exchanges = ?,
+          events_this_year = ?, regional_distribution = ?, programs_offered = ?,
+          engagement_score = ?, updated_at = datetime('now')
+        WHERE id = ?`,
+        [
+          partnerUniversities, activeAgreements, studentExchanges,
+          eventsThisYear, JSON.stringify(regionalDistribution),
+          JSON.stringify(programsOffered), engagementScore, existing.id
+        ]
+      )
+    } else {
+      run(
+        `INSERT INTO dashboard_stats
+          (partner_universities, active_agreements, student_exchanges, events_this_year,
+           regional_distribution, programs_offered, engagement_score)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          partnerUniversities, activeAgreements, studentExchanges,
+          eventsThisYear, JSON.stringify(regionalDistribution),
+          JSON.stringify(programsOffered), engagementScore
+        ]
+      )
+    }
+
     res.json({ success: true, message: 'Stats updated successfully' })
   } catch (error) {
     console.error('Error updating stats:', error)

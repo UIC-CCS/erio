@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Calendar, MapPin, Users } from 'lucide-react'
-import { activitiesAPI } from '../services/supabaseApi'
+import { activitiesAPI } from '../services/api'
 
 const defaultActivities = [
   {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, Globe, ChevronLeft, MapPin, Link2 } from 'lucide-react'
-import { partnersAPI } from '../services/supabaseApi'
+import { partnersAPI } from '../services/api'
 import {
   REGIONS,
   SUB_REGIONS,
