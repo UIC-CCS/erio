@@ -15,6 +15,7 @@ import AdminPartners from './components/admin/AdminPartners'
 import AdminActivities from './components/admin/AdminActivities'
 import AdminMobility from './components/admin/AdminMobility'
 import AdminEvents from './components/admin/AdminEvents'
+import AdminUsers from './components/admin/AdminUsers'
 
 function PublicDashboard({ onAdminLoginSuccess }) {
   const [activeView, setActiveView] = useState('dashboard')
@@ -182,6 +183,7 @@ function App() {
           <Route path="activities" element={<AdminActivities />} />
           <Route path="mobility" element={<AdminMobility />} />
           <Route path="events" element={<AdminEvents />} />
+          <Route path="users" element={<AdminUsers />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

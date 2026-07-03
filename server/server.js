@@ -11,6 +11,7 @@ import mobilityProgrammesRoutes from './routes/mobilityProgrammes.js'
 import eventsRoutes from './routes/events.js'
 import websiteViewsRoutes from './routes/websiteViews.js'
 import facebookRoutes from './routes/facebook.js'
+import adminRoutes from './routes/admin.js'
 
 dotenv.config()
 
@@ -37,6 +38,7 @@ app.use('/api/mobility-programmes', mobilityProgrammesRoutes)
 app.use('/api/events', eventsRoutes)
 app.use('/api/website-views', websiteViewsRoutes)
 app.use('/api/facebook', facebookRoutes)
+app.use('/api/admin', adminRoutes)
 
 app.use((err, req, res, next) => {
   console.error('Error:', err)

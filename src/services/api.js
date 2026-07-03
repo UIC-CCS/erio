@@ -335,5 +335,29 @@ export const adminAPI = {
 
     const response = await apiRequest('/auth/verify')
     return { ...response, admin: { id: adminId, email: localStorage.getItem('adminEmail') } }
+  },
+
+  listUsers: async () => {
+    return apiRequest('/admin/users')
+  },
+
+  createUser: async (email, password) => {
+    return apiRequest('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    })
+  },
+
+  deleteUser: async (id) => {
+    return apiRequest(`/admin/users/${id}`, {
+      method: 'DELETE'
+    })
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    return apiRequest('/admin/users/password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword })
+    })
   }
 }
