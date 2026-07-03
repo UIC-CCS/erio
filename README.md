@@ -169,3 +169,161 @@ Glassmorphism with translucent cards, backdrop blur, warm beige/sand background,
 npm run build          # Frontend → dist/
 cd server && npm start # Backend
 ```
+
+## Deploy to Ubuntu VPS (Nginx)
+
+These instructions assume a fresh Ubuntu 22.04+ VPS with Node.js 18+ installed.
+
+### 1. Install Node.js (if not installed)
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v
+npm -v
+```
+
+### 2. Clone the Repository
+
+```bash
+git clone https://github.com/UIC-CCS/erio.git /opt/erio
+cd /opt/erio
+```
+
+### 3. Install Dependencies & Build Frontend
+
+```bash
+npm install --legacy-peer-deps
+npm run build
+cd server && npm install && cd ..
+```
+
+### 4. Set Up Environment Variables
+
+Create `.env` in the `server/` directory:
+
+```bash
+cat > server/.env << 'EOF'
+PORT=3001
+JWT_SECRET=change_this_to_a_random_secret_key
+FRONTEND_URL=http://your-domain.com
+ADMIN_EMAIL=paung_230000001724@uic.edu.ph
+ADMIN_PASSWORD=erio2026pass!
+EOF
+```
+
+The SQLite database at `server/database/erio.db` will auto-create on first run.
+
+### 5. Set Up a Systemd Service for the API
+
+```bash
+sudo tee /etc/systemd/system/erio-api.service << 'EOF'
+[Unit]
+Description=ERIO Dashboard API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/erio/server
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=3001
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable erio-api
+sudo systemctl start erio-api
+sudo systemctl status erio-api
+```
+
+### 6. Configure Nginx
+
+```bash
+sudo tee /etc/nginx/sites-available/erio << 'EOF'
+server {
+    listen 80;
+    server_name your-domain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com;
+
+    # SSL certificates — install via Certbot or your provider
+    ssl_certificate     /etc/ssl/certs/your-cert.pem;
+    ssl_certificate_key /etc/ssl/private/your-key.pem;
+
+    root /opt/erio/dist;
+    index index.html;
+
+    # SPA fallback — serve index.html for all non-file routes
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy API requests to the Express backend
+    location /api/ {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /health {
+        proxy_pass http://127.0.0.1:3001;
+    }
+}
+EOF
+
+sudo ln -sf /etc/nginx/sites-available/erio /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 7. (Optional) SSL with Certbot
+
+```bash
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+### 8. File Permissions
+
+The SQLite database is written by the API process. Ensure `www-data` can write to the database directory:
+
+```bash
+sudo chown -R www-data:www-data /opt/erio/server/database
+sudo chmod 755 /opt/erio/server/database
+```
+
+### 9. Restart & Verify
+
+```bash
+sudo systemctl restart erio-api
+sudo systemctl restart nginx
+```
+
+Visit `https://your-domain.com`. The API health check is at `https://your-domain.com/health`.
+
+### Updating
+
+```bash
+cd /opt/erio
+git pull
+npm install --legacy-peer-deps
+npm run build
+cd server && npm install && cd ..
+sudo systemctl restart erio-api
+```
